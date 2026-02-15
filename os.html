@@ -274,6 +274,19 @@
                 list.appendChild(card);
             });
         }
+
+// Adicione isso dentro do <script> do os.html
+window.addEventListener('message', (event) => {
+    if (event.data.type === 'SET_WALLPAPER') {
+        const url = event.data.url;
+        document.getElementById('main-desktop').style.backgroundImage = `url('${url}')`;
+        document.getElementById('lock-screen').style.backgroundImage = `url('${url}')`;
+    }
+});
+        
+
+
+        
     </script>
 </body>
 </html>
