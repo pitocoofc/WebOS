@@ -9,10 +9,10 @@
             font-family: 'Segoe UI', sans-serif;
             user-select: none;
         }
-        h2 { border-bottom: 1px solid #333; padding-bottom: 10px; font-weight: 300; }
+        h2 { border-bottom: 1px solid #333; padding-bottom: 10px; font-weight: 300; margin-top: 0; }
         
         .section { margin-bottom: 30px; }
-        .label { font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 10px; display: block; }
+        .label { font-size: 11px; color: #3b82f6; text-transform: uppercase; margin-bottom: 10px; display: block; letter-spacing: 1px;}
 
         /* Grid de Wallpapers */
         .wp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -23,13 +23,28 @@
         }
         .wp-item:active { transform: scale(0.95); border-color: #3b82f6; }
 
-        /* Card de Info */
+        /* Estilo dos Drivers */
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .driver-btn {
+            flex: 1; padding: 12px; background: #222; border: 1px solid #444;
+            color: #fff; border-radius: 8px; cursor: pointer; font-size: 13px;
+            transition: 0.3s;
+        }
+        .driver-btn:hover { background: #333; }
+        .driver-btn.primary { background: #3b82f6; border-color: #2563eb; }
+
+        /* Barra de Progresso */
+        #progress-container {
+            display: none; width: 100%; height: 8px; background: #222; 
+            border-radius: 4px; margin-top: 15px; overflow: hidden;
+        }
+        #progress-bar { width: 0%; height: 100%; background: #3b82f6; transition: width 0.1s; }
+
         .info-card {
             background: #222; padding: 15px; border-radius: 12px;
             border: 1px solid #333; font-size: 14px;
         }
         .info-line { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .info-line span:last-child { color: #3b82f6; font-family: monospace; }
     </style>
 </head>
 <body>
@@ -38,17 +53,33 @@
         <span class="label">Personalização</span>
         <h2>Papel de Parede</h2>
         <div class="wp-grid">
-            <div class="wp-item" style="background-image: url('https://w.wallhaven.cc/full/2e/wallhaven-2exm9y.jpg');" 
-                 onclick="changeWP('https://w.wallhaven.cc/full/2e/wallhaven-2exm9y.jpg')"></div>
-            
-            <div class="wp-item" style="background-image: url('https://w.wallhaven.cc/full/85/wallhaven-85r89y.jpg');" 
-                 onclick="changeWP('https://w.wallhaven.cc/full/85/wallhaven-85r89y.jpg')"></div>
-            
-            <div class="wp-item" style="background-image: url('https://w.wallhaven.cc/full/6o/wallhaven-6oxp96.jpg');" 
-                 onclick="changeWP('https://w.wallhaven.cc/full/6o/wallhaven-6oxp96.jpg')"></div>
-            
-            <div class="wp-item" style="background-image: url('https://w.wallhaven.cc/full/49/wallhaven-498638.jpg');" 
+            <div class="wp-item" style="background-image: url('https://www.opovo.com.br/_midias/jpg/2026/02/09/800x600/1_fase_lua_minguante_11_fevereiro_2026-39299104.jpg');" 
                  onclick="changeWP('https://www.opovo.com.br/_midias/jpg/2026/02/09/800x600/1_fase_lua_minguante_11_fevereiro_2026-39299104.jpg')"></div>
+            
+            <div class="wp-item" style="background-image: url('https://w.wallhaven.cc/full/j3/wallhaven-j3m8p6.png');" 
+                 onclick="changeWP('https://w.wallhaven.cc/full/j3/wallhaven-j3m8p6.png')"></div>
+            
+            <div class="wp-item" style="background-image: url('https://w.wallhaven.cc/full/ox/wallhaven-oxv699.jpg');" 
+                 onclick="changeWP('https://w.wallhaven.cc/full/ox/wallhaven-oxv699.jpg')"></div>
+            
+            <div class="wp-item" style="background-image: url('https://w.wallhaven.cc/full/gp/wallhaven-gpl9ve.jpg');" 
+                 onclick="changeWP('https://w.wallhaven.cc/full/gp/wallhaven-gpl9ve.jpg')"></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <span class="label">Hardware & Subsistema</span>
+        <h2>Drivers de Dispositivo</h2>
+        <div class="info-card">
+            <div class="info-line"><span>Driver de Vídeo:</span> <span id="v-status">OFF</span></div>
+            <div class="info-line"><span>Driver de Rede (Ndj):</span> <span id="n-status">OFF</span></div>
+        </div>
+        
+        <div id="progress-container"><div id="progress-bar"></div></div>
+
+        <div class="btn-group">
+            <button class="driver-btn" onclick="installDrivers('essentials')">Essenciais</button>
+            <button class="driver-btn primary" onclick="installDrivers('full')">Baixar Todos</button>
         </div>
     </div>
 
@@ -56,15 +87,50 @@
         <span class="label">Sistema</span>
         <div class="info-card">
             <div class="info-line"><span>Versão:</span> <span>1.0.0-beta</span></div>
-            <div class="info-line"><span>Desenvolvedor</span> <span>Ghost</span></div>
-            <div class="info-line"><span>Kernel:</span> <span>Web-Engine</span></div>
+            <div class="info-line"><span>Desenvolvedor:</span> <span>Ghost</span></div>
+            <div class="info-line"><span>Repositório:</span> <span>Ndj-lib</span></div>
         </div>
     </div>
 
     <script>
         function changeWP(url) {
-            // Envia uma mensagem para o os.html (o pai do iframe)
             window.parent.postMessage({ type: 'SET_WALLPAPER', url: url }, '*');
+        }
+
+        function installDrivers(mode) {
+            const container = document.getElementById('progress-container');
+            const bar = document.getElementById('progress-bar');
+            container.style.display = 'block';
+            let width = 0;
+
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                    completeInstallation(mode);
+                } else {
+                    width += Math.random() * 15;
+                    if(width > 100) width = 100;
+                    bar.style.width = width + '%';
+                }
+            }, 200);
+        }
+
+        function completeInstallation(mode) {
+            // Acessando as variáveis diretamente no os.html via parent
+            if (mode === 'essentials') {
+                parent.driver_video = "on";
+                document.getElementById('v-status').innerText = "ON";
+                document.getElementById('v-status').style.color = "#4ade80";
+            } else {
+                parent.driver_video = "on";
+                parent.driver_ndj = "on";
+                document.getElementById('v-status').innerText = "ON";
+                document.getElementById('n-status').innerText = "ON";
+                document.getElementById('v-status').style.color = "#4ade80";
+                document.getElementById('n-status').style.color = "#4ade80";
+            }
+            alert("Sincronização com Kernel concluída!");
+            document.getElementById('progress-container').style.display = 'none';
         }
     </script>
 </body>
