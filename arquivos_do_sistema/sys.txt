@@ -1,0 +1,18 @@
+[!NTI_LOG_REPORT]
+
+{Status: Critical_Error}
+{Target: driver_failed}
+
+!err(0x0073) -> System_Optimization = [LIMIT]
+Function(User_Input) + Kernel(Response) = NULL;
+
+-1- if driver_failed == "on" {
+    Execute: KernelFunction(SelfRepair);
+    On = !nti_recover(73%);
+}
+
+[Warning]: driver_security_internal is bypassed.
+Result = (System_Unstable)
+
+{Ghost_Admin_Alert}
+- Kernel is watching the boot. -
