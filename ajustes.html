@@ -119,11 +119,22 @@
             // Acessando as variáveis diretamente no os.html via parent
             if (mode === 'essentials') {
                 parent.driver_video = "on";
+                parent.driver_audio = "on";
+                parent.driver_optimization = "on";
+                parent.driver_user_erro = "on";
                 document.getElementById('v-status').innerText = "ON";
                 document.getElementById('v-status').style.color = "#4ade80";
             } else {
                 parent.driver_video = "on";
                 parent.driver_ndj = "on";
+                parent.driver_system = "on";
+                parent.driver_camera = "on";
+                parent.driver_touch_advanced = "on";
+                parent.driver_cloud_conect = "on";
+                parent.driver_all_conect = "on";
+                parent.driver_security_internal = "on";
+                parent.driver_optimization = "on";
+                parent.driver_failed = "on"
                 document.getElementById('v-status').innerText = "ON";
                 document.getElementById('n-status').innerText = "ON";
                 document.getElementById('v-status').style.color = "#4ade80";
@@ -135,3 +146,5 @@
     </script>
 </body>
 </html>
+
+
