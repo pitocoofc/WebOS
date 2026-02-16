@@ -179,6 +179,19 @@
     </div>
 
     <script>
+// Variáveis Globais de Hardware
+var driver_video = "off";
+var driver_ndj = "off";
+var driver_files = "off";
+
+// Função para os aplicativos consultarem o status (Opcional, mas ajuda)
+function checkDriver(name) {
+    return window[name]; 
+}
+        
+
+
+        
         // Lista de Aplicativos (Base de dados para a busca)
         const ALL_APPS = [
             { name: 'Ajustes', icon: '⚙️', url: 'ajustes.html' },
