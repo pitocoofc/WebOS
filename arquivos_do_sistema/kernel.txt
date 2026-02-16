@@ -1,0 +1,24 @@
+[Fuction+'Kernel]
+
+ {Evh). .!-Ker +- 73;-!
+
+         {}
+
+!nti(kernel)/-€Function+Kernel=KernelFunction
+(bootSucess)
+Kernel = Result+(bootSystem)
+(bootFailed)
+Function = Kernel+;(KernelFailed)
+
+if kernel == bootSystem{
+BootInatall System function "on"
+On = boot function (Boot)}
+-2- if Function = KernelFailed{
+BootInatall System function "off"
+On = boot function (Boot){
+
+    F = off{Failes system}
+  F = on{System operational}
+ }
+}
+endif
