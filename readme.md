@@ -1,1 +1,1 @@
-https://pitocoofc.github.io/WebOS/
+https://pitocoofc.github.io/WebOS/os.html
