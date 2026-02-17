@@ -9,7 +9,6 @@
         input { background: transparent; border: none; color: #4ade80; outline: none; flex: 1; font-family: inherit; font-size: 14px; }
         .prompt { color: #3b82f6; }
         .error { color: #ef4444; }
-        .success { color: #22c55e; }
     </style>
 </head>
 <body>
@@ -26,17 +25,25 @@ Digite 'help' para ver os comandos.
     <script>
         const output = document.getElementById('output');
         const input = document.getElementById('cmd');
+        
+        // Variável de controle de Overclock
+        let ramOverclocks = 0;
 
         const commands = {
             'help': () => "Comandos: help, clear, sys --info, ghost --bench, net --scan, kernel --read, ghost --overclock",
+            
             'clear': () => { output.innerHTML = ''; return ''; },
+            
             'sys --info': () => {
+                const ramAtu = parent.ram_virtual || 5;
+                const procAtu = parent.proc_speed || "2.8GHz";
                 return `[HARDWARE REPORT]
-CPU: SnapCobra 690 v8.2
-RAM: 8GB + 5GB V-RAM (Virtualization ACTIVE)
+CPU: SnapCobra 690 @ ${procAtu}
+RAM: 8GB + ${ramAtu}GB V-RAM (ACTIVE)
 GPU: Ghost Render Engine 2.0
 STORAGE: 128GB (25.1GB Occupied)`;
             },
+
             'net --scan': () => {
                 return `[SCANNING NETWORK INTERFACES...]
 wlan0: PROMISCUOUS MODE
@@ -47,62 +54,48 @@ Scanning for SSID...
 Status: driver_ndj is ON. Connection stable.`;
             },
 
-let ramOverclocks = 0; // Contador de abusos do sistema
-
-const commands = {
-    // ... seus comandos anteriores ...
-    'ghost --overclock': () => {
-        return `[ALERTA] ACESSANDO NÚCLEO DO KERNEL...
+            'ghost --overclock': () => {
+                return `[ALERTA] ACESSANDO NÚCLEO DO KERNEL...
 AVISO: O overclock pode causar instabilidade no driver_failed.
 Deseja prosseguir? Digite 'overclock --proc' ou 'overclock --ram'`;
-    },
+            },
 
-    'overclock --ram': () => {
-        if (ramOverclocks >= 2) {
-            // TERCEIRO OVERCLOCK: O "ritual" deu errado.
-            // Redireciona para o arquivo de erro fatal que faremos no futuro.
-            window.location.href = "system_collapse.html"; 
-            return "CRITICAL FAILURE: SYSTEM_OVERHEAT";
-        }
+            'overclock --ram': () => {
+                if (ramOverclocks >= 2) {
+                    window.location.href = "system_collapse.html"; 
+                    return "CRITICAL FAILURE: SYSTEM_OVERHEAT";
+                }
 
-        ramOverclocks++;
-        // Enviamos o sinal para o sistema global
-        if(parent.ram_virtual) {
-            parent.ram_virtual += 5; 
-        } else {
-            parent.ram_virtual = 10; // Caso ainda não tenha sido definido
-        }
+                ramOverclocks++;
+                // Sincroniza com o Kernel (parent)
+                if(!parent.ram_virtual) parent.ram_virtual = 5;
+                parent.ram_virtual += 5; 
 
-        return `[PROCESSANDO RITUAL DE MEMÓRIA]
+                return `[PROCESSANDO RITUAL DE MEMÓRIA]
 Desbloqueando endereços de V-RAM...
 Sinal enviado ao Driver de Otimização.
 STATUS: RAM Virtual expandida (+5GB).
 Total Overclocks realizados: ${ramOverclocks}/2`;
-    },
+            },
 
-    'overclock --proc': () => {
-        // Lógica similar para o processador
-        parent.proc_speed = "4.2GHz (TURBO)";
-        return `[OVERCLOCK PROCESSADOR]
+            'overclock --proc': () => {
+                parent.proc_speed = "4.2GHz (TURBO)";
+                return `[OVERCLOCK PROCESSADOR]
 Injetando voltagem no SnapCobra 690...
 Limitador de temperatura: BYPASSED.
 Frequência atual: 4.2GHz.
 STATUS: Desempenho máximo atingido.`;
-    }
-};
-        
-
-
-
+            },
             
             'ghost --bench': () => {
                 return `[BENCHMARK STARTING]
 SnapCobra Core 1: [||||||||||] 100%
 SnapCobra Core 2: [||||||||||] 100%
-V-RAM Sync: 5.2GB/5.0GB (Overclocking...)
+V-RAM Sync: Active
 RESULT: 84.921 G-Points. Sistema apto para Cloud Rendering.`;
             },
-            'kernel --read': () => "Lendo kernel.txt do GitHub...\n" + (parent.kernel_data || "Aguardando sincronização com repositório...")
+
+            'kernel --read': () => "Lendo kernel.txt do GitHub...\n" + (parent.kernel_data || "Aguardando sincronização...")
         };
 
         input.addEventListener('keydown', (e) => {
