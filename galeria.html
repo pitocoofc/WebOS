@@ -2,106 +2,110 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         * { box-sizing: border-box; }
         body { 
-            margin: 0; padding: 20px; background: #111; 
-            color: #fff; font-family: 'Segoe UI', sans-serif; 
-            overflow-y: auto;
+            margin: 0; padding: 15px; background: #202124; 
+            color: #fff; font-family: 'Segoe UI', sans-serif; height: 100vh;
         }
 
-        h2 { font-weight: 300; letter-spacing: 1px; color: #3b82f6; }
+        /* Toolbar Superior */
+        .toolbar { 
+            display: flex; gap: 10px; margin-bottom: 20px; 
+            background: #000; padding: 10px; border-radius: 8px;
+        }
+        .btn-action {
+            background: #35363a; border: 1px solid #444; color: #fff;
+            padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 12px;
+        }
+        .btn-action:hover { border-color: #3b82f6; }
 
-        /* Grid da Galeria */
+        /* Grid */
         .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
             gap: 10px;
-            padding-bottom: 50px;
         }
-
-        .photo-card {
-            aspect-ratio: 1 / 1;
-            background: #222;
-            border-radius: 8px;
-            overflow: hidden;
-            cursor: pointer;
-            border: 1px solid #333;
-            transition: transform 0.2s;
+        .photo-thumb {
+            aspect-ratio: 1/1; background: #35363a; border-radius: 4px;
+            overflow: hidden; cursor: pointer; border: 1px solid #444;
         }
+        .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-        .photo-card:hover { transform: scale(1.05); border-color: #3b82f6; }
-
-        .photo-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        /* Modal da Câmera (Simulada) */
+        #camera-modal {
+            position: fixed; inset: 0; background: #000; z-index: 100;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
         }
-
-        /* Viewer de Imagem (Tela Cheia) */
-        #photo-viewer {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(10px);
-            display: none;
-            align-items: center; justify-content: center;
-            z-index: 100; flex-direction: column;
+        .camera-viewport {
+            width: 90%; max-width: 400px; aspect-ratio: 3/4;
+            background: #111; border: 2px solid #3b82f6; position: relative;
+            overflow: hidden; display: flex; align-items: center; justify-content: center;
         }
-
-        #viewer-img { max-width: 95%; max-height: 80%; border-radius: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
-
-        .btn-close {
-            margin-top: 20px; padding: 10px 25px;
-            background: #3b82f6; color: white; border: none;
-            border-radius: 20px; cursor: pointer; font-weight: bold;
+        .humanoid-overlay {
+            width: 100%; opacity: 0.6; filter: hue-rotate(180deg);
         }
+        .scan-line {
+            position: absolute; width: 100%; height: 2px; background: #3b82f6;
+            top: 0; animation: scan 3s linear infinite; box-shadow: 0 0 10px #3b82f6;
+        }
+        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+
+        .cam-controls { margin-top: 20px; display: flex; gap: 20px; }
     </style>
 </head>
 <body>
 
-    <h2>Galeria do Sistema</h2>
-    <div class="gallery-grid" id="gallery-container">
-        </div>
+    <div class="toolbar">
+        <label class="btn-action">
+            📁 Adicionar Foto <input type="file" id="file-input" hidden onchange="addFile(this)">
+        </label>
+        <button class="btn-action" onclick="openCamera()">📷 Câmera Ndj</button>
+    </div>
 
-    <div id="photo-viewer" onclick="closePhoto()">
-        <img id="viewer-img" src="">
-        <button class="btn-close">Fechar</button>
+    <div class="gallery-grid" id="main-grid">
+        <div class="photo-thumb"><img src="https://via.placeholder.com/150/3b82f6/ffffff?text=OS_IMG_001"></div>
+    </div>
+
+    <div id="camera-modal">
+        <div class="camera-viewport">
+            <img src="https://i.pinimg.com/originals/9b/ce/74/9bce7449a022b797171d87f7b98a3e75.png" class="humanoid-overlay">
+            <div class="scan-line"></div>
+            <div style="position:absolute; bottom:10px; left:10px; font-size:10px; color:#3b82f6;">NDJ-BIO-SENSOR ACTIVE</div>
+        </div>
+        <div class="cam-controls">
+            <button class="btn-action" style="background:#3b82f6;" onclick="capture()">CAPTURAR</button>
+            <button class="btn-action" onclick="closeCamera()">FECHAR</button>
+        </div>
     </div>
 
     <script>
-        // Array de fotos (Pode ser local ou URLs externas)
-        // Dica: Futuramente podemos puxar fotos do seu repositório Ndj-lib
-        const photos = [
-            { url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400', title: 'Wallpaper 1' },
-            { url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400', title: 'Tech Retro' },
-            { url: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=400', title: 'Flow' },
-            { url: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=400', title: 'Gradient' },
-            { url: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=400', title: 'Purple' },
-            { url: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=400', title: 'Ghost Blur' }
-        ];
+        const grid = document.getElementById('main-grid');
 
-        const container = document.getElementById('gallery-container');
-        const viewer = document.getElementById('photo-viewer');
-        const viewerImg = document.getElementById('viewer-img');
-
-        // Renderiza as fotos
-        photos.forEach(photo => {
-            const card = document.createElement('div');
-            card.className = 'photo-card';
-            card.innerHTML = `<img src="${photo.url}" loading="lazy">`;
-            card.onclick = () => openPhoto(photo.url);
-            container.appendChild(card);
-        });
-
-        function openPhoto(url) {
-            viewerImg.src = url;
-            viewer.style.display = 'flex';
+        // Adicionar do ficheiro real do celular
+        function addFile(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    createThumb(e.target.result);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
         }
 
-        function closePhoto() {
-            viewer.style.display = 'none';
-            viewerImg.src = '';
+        function openCamera() { document.getElementById('camera-modal').style.display = 'flex'; }
+        function closeCamera() { document.getElementById('camera-modal').style.display = 'none'; }
+
+        function capture() {
+            // "Captura" o humanoide
+            createThumb("https://i.pinimg.com/originals/9b/ce/74/9bce7449a022b797171d87f7b98a3e75.png");
+            closeCamera();
+        }
+
+        function createThumb(src) {
+            const div = document.createElement('div');
+            div.className = 'photo-thumb';
+            div.innerHTML = `<img src="${src}">`;
+            grid.prepend(div);
         }
     </script>
 </body>
