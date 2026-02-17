@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; padding: 20px; background: #111; 
+            color: #fff; font-family: 'Segoe UI', sans-serif; 
+            overflow-y: auto;
+        }
+
+        h2 { font-weight: 300; letter-spacing: 1px; color: #3b82f6; }
+
+        /* Grid da Galeria */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            padding-bottom: 50px;
+        }
+
+        .photo-card {
+            aspect-ratio: 1 / 1;
+            background: #222;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid #333;
+            transition: transform 0.2s;
+        }
+
+        .photo-card:hover { transform: scale(1.05); border-color: #3b82f6; }
+
+        .photo-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Viewer de Imagem (Tela Cheia) */
+        #photo-viewer {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 100; flex-direction: column;
+        }
+
+        #viewer-img { max-width: 95%; max-height: 80%; border-radius: 5px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+
+        .btn-close {
+            margin-top: 20px; padding: 10px 25px;
+            background: #3b82f6; color: white; border: none;
+            border-radius: 20px; cursor: pointer; font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Galeria do Sistema</h2>
+    <div class="gallery-grid" id="gallery-container">
+        </div>
+
+    <div id="photo-viewer" onclick="closePhoto()">
+        <img id="viewer-img" src="">
+        <button class="btn-close">Fechar</button>
+    </div>
+
+    <script>
+        // Array de fotos (Pode ser local ou URLs externas)
+        // Dica: Futuramente podemos puxar fotos do seu repositório Ndj-lib
+        const photos = [
+            { url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400', title: 'Wallpaper 1' },
+            { url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400', title: 'Tech Retro' },
+            { url: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=400', title: 'Flow' },
+            { url: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=400', title: 'Gradient' },
+            { url: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=400', title: 'Purple' },
+            { url: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=400', title: 'Ghost Blur' }
+        ];
+
+        const container = document.getElementById('gallery-container');
+        const viewer = document.getElementById('photo-viewer');
+        const viewerImg = document.getElementById('viewer-img');
+
+        // Renderiza as fotos
+        photos.forEach(photo => {
+            const card = document.createElement('div');
+            card.className = 'photo-card';
+            card.innerHTML = `<img src="${photo.url}" loading="lazy">`;
+            card.onclick = () => openPhoto(photo.url);
+            container.appendChild(card);
+        });
+
+        function openPhoto(url) {
+            viewerImg.src = url;
+            viewer.style.display = 'flex';
+        }
+
+        function closePhoto() {
+            viewer.style.display = 'none';
+            viewerImg.src = '';
+        }
+    </script>
+</body>
+</html>
