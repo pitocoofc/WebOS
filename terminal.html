@@ -28,7 +28,7 @@ Digite 'help' para ver os comandos.
         const input = document.getElementById('cmd');
 
         const commands = {
-            'help': () => "Comandos: help, clear, sys --info, ghost --bench, net --scan, kernel --read",
+            'help': () => "Comandos: help, clear, sys --info, ghost --bench, net --scan, kernel --read, ghost --overclock",
             'clear': () => { output.innerHTML = ''; return ''; },
             'sys --info': () => {
                 return `[HARDWARE REPORT]
@@ -46,6 +46,55 @@ Scanning for SSID...
 > Multilaser_Default (SECURED)
 Status: driver_ndj is ON. Connection stable.`;
             },
+
+let ramOverclocks = 0; // Contador de abusos do sistema
+
+const commands = {
+    // ... seus comandos anteriores ...
+    'ghost --overclock': () => {
+        return `[ALERTA] ACESSANDO NÚCLEO DO KERNEL...
+AVISO: O overclock pode causar instabilidade no driver_failed.
+Deseja prosseguir? Digite 'overclock --proc' ou 'overclock --ram'`;
+    },
+
+    'overclock --ram': () => {
+        if (ramOverclocks >= 2) {
+            // TERCEIRO OVERCLOCK: O "ritual" deu errado.
+            // Redireciona para o arquivo de erro fatal que faremos no futuro.
+            window.location.href = "system_collapse.html"; 
+            return "CRITICAL FAILURE: SYSTEM_OVERHEAT";
+        }
+
+        ramOverclocks++;
+        // Enviamos o sinal para o sistema global
+        if(parent.ram_virtual) {
+            parent.ram_virtual += 5; 
+        } else {
+            parent.ram_virtual = 10; // Caso ainda não tenha sido definido
+        }
+
+        return `[PROCESSANDO RITUAL DE MEMÓRIA]
+Desbloqueando endereços de V-RAM...
+Sinal enviado ao Driver de Otimização.
+STATUS: RAM Virtual expandida (+5GB).
+Total Overclocks realizados: ${ramOverclocks}/2`;
+    },
+
+    'overclock --proc': () => {
+        // Lógica similar para o processador
+        parent.proc_speed = "4.2GHz (TURBO)";
+        return `[OVERCLOCK PROCESSADOR]
+Injetando voltagem no SnapCobra 690...
+Limitador de temperatura: BYPASSED.
+Frequência atual: 4.2GHz.
+STATUS: Desempenho máximo atingido.`;
+    }
+};
+        
+
+
+
+            
             'ghost --bench': () => {
                 return `[BENCHMARK STARTING]
 SnapCobra Core 1: [||||||||||] 100%
