@@ -5,99 +5,140 @@
     <style>
         * { box-sizing: border-box; }
         body { 
-            margin: 0; padding: 15px; background: #202124; 
+            margin: 0; padding: 15px; background: #0a0a0a; 
             color: #fff; font-family: 'Segoe UI', sans-serif; height: 100vh;
+            display: flex; flex-direction: column;
         }
 
-        /* Toolbar Superior */
         .toolbar { 
-            display: flex; gap: 10px; margin-bottom: 20px; 
-            background: #000; padding: 10px; border-radius: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+            background: #111; padding: 12px; border-radius: 8px; border: 1px solid #333;
+            margin-bottom: 20px;
         }
+        
         .btn-action {
-            background: #35363a; border: 1px solid #444; color: #fff;
-            padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 12px;
+            background: #222; border: 1px solid #444; color: #fff;
+            padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 11px;
+            text-transform: uppercase; letter-spacing: 1px;
         }
-        .btn-action:hover { border-color: #3b82f6; }
+        .btn-action:hover { border-color: #3b82f6; color: #3b82f6; }
 
-        /* Grid */
         .gallery-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 10px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px; overflow-y: auto; flex: 1;
         }
         .photo-thumb {
-            aspect-ratio: 1/1; background: #35363a; border-radius: 4px;
-            overflow: hidden; cursor: pointer; border: 1px solid #444;
+            aspect-ratio: 1/1; background: #111; border-radius: 8px;
+            overflow: hidden; cursor: pointer; border: 1px solid #333;
+            transition: 0.3s; position: relative;
         }
+        .photo-thumb:hover { border-color: #3b82f6; transform: scale(1.05); }
         .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Modal da Câmera (Simulada) */
+        /* Modal da Câmera Real */
         #camera-modal {
-            position: fixed; inset: 0; background: #000; z-index: 100;
+            position: fixed; inset: 0; background: #000; z-index: 500;
             display: none; flex-direction: column; align-items: center; justify-content: center;
         }
         .camera-viewport {
-            width: 90%; max-width: 400px; aspect-ratio: 3/4;
-            background: #111; border: 2px solid #3b82f6; position: relative;
-            overflow: hidden; display: flex; align-items: center; justify-content: center;
+            width: 90%; max-width: 450px; aspect-ratio: 3/4;
+            background: #000; border: 1px solid #333; position: relative;
+            overflow: hidden; border-radius: 15px;
         }
-        .humanoid-overlay {
-            width: 100%; opacity: 0.6; filter: hue-rotate(180deg);
-        }
+        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        
         .scan-line {
-            position: absolute; width: 100%; height: 2px; background: #3b82f6;
-            top: 0; animation: scan 3s linear infinite; box-shadow: 0 0 10px #3b82f6;
+            position: absolute; width: 100%; height: 2px; background: rgba(59, 130, 246, 0.5);
+            top: 0; animation: scan 4s linear infinite; box-shadow: 0 0 15px #3b82f6;
+            z-index: 10;
         }
         @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
 
-        .cam-controls { margin-top: 20px; display: flex; gap: 20px; }
+        .cam-controls { margin-top: 30px; display: flex; gap: 20px; }
+        #canvas-hidden { display: none; }
     </style>
 </head>
 <body>
 
     <div class="toolbar">
-        <label class="btn-action">
-            📁 Adicionar Foto <input type="file" id="file-input" hidden onchange="addFile(this)">
-        </label>
-        <button class="btn-action" onclick="openCamera()">📷 Câmera Ndj</button>
+        <span style="font-size: 10px; letter-spacing: 2px; color: #3b82f6;">NDJ / IMAGE SECTOR</span>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn-action" onclick="openCamera()">📷 Ativar Bio-Cam</button>
+            <button class="btn-action" onclick="window.parent.postMessage({type:'CLOSE_WINDOW'}, '*')">Sair</button>
+        </div>
     </div>
 
-    <div class="gallery-grid" id="main-grid">
-        <div class="photo-thumb"><img src="https://via.placeholder.com/150/3b82f6/ffffff?text=OS_IMG_001"></div>
-    </div>
+    <div class="gallery-grid" id="main-grid"></div>
 
     <div id="camera-modal">
         <div class="camera-viewport">
-            <img src="https://i.pinimg.com/originals/9b/ce/74/9bce7449a022b797171d87f7b98a3e75.png" class="humanoid-overlay">
+            <video id="video" autoplay playsinline></video>
             <div class="scan-line"></div>
-            <div style="position:absolute; bottom:10px; left:10px; font-size:10px; color:#3b82f6;">NDJ-BIO-SENSOR ACTIVE</div>
+            <div style="position:absolute; bottom:15px; left:15px; font-size:10px; color:#3b82f6; z-index:20;">
+                BIO-SCANNER READY // DRV_CAM_ACTIVE
+            </div>
         </div>
         <div class="cam-controls">
-            <button class="btn-action" style="background:#3b82f6;" onclick="capture()">CAPTURAR</button>
-            <button class="btn-action" onclick="closeCamera()">FECHAR</button>
+            <button class="btn-action" style="background:#3b82f6; border:none; padding: 15px 30px;" onclick="capture()">CAPTURAR</button>
+            <button class="btn-action" onclick="closeCamera()">CANCELAR</button>
         </div>
     </div>
 
+    <canvas id="canvas-hidden" width="640" height="480"></canvas>
+
     <script>
         const grid = document.getElementById('main-grid');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas-hidden');
+        let stream = null;
 
-        // Adicionar do ficheiro real do celular
-        function addFile(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    createThumb(e.target.result);
-                };
-                reader.readAsDataURL(input.files[0]);
+        // --- INTEGRAÇÃO COM O SISTEMA DE ARQUIVOS ---
+        // Salva a foto no "Sete Chaves" (LocalStorage) para o Explorador ver
+        function savePhotoToSystem(fileName, base64Data) {
+            let userFiles = JSON.parse(localStorage.getItem('ndj_user_files') || '{}');
+            userFiles[fileName] = base64Data; // Salva o binário da imagem
+            localStorage.setItem('ndj_user_files', JSON.stringify(userFiles));
+            
+            // Avisa o OS que um novo arquivo foi criado (opcional)
+            console.log("Foto guardada na pasta IMAGENS do sistema.");
+        }
+
+        async function openCamera() {
+            document.getElementById('camera-modal').style.display = 'flex';
+            try {
+                // Acessa a câmera real do tablet/celular
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "user" }, 
+                    audio: false 
+                });
+                video.srcObject = stream;
+            } catch (err) {
+                alert("Erro ao acessar hardware: Verifique o driver de câmera no os.html");
+                closeCamera();
             }
         }
 
-        function openCamera() { document.getElementById('camera-modal').style.display = 'flex'; }
-        function closeCamera() { document.getElementById('camera-modal').style.display = 'none'; }
+        function closeCamera() {
+            if (stream) stream.getTracks().forEach(track => track.stop());
+            document.getElementById('camera-modal').style.display = 'none';
+        }
 
         function capture() {
-            // "Captura" o humanoide
-            createThumb("https://i.pinimg.com/originals/9b/ce/74/9bce7449a022b797171d87f7b98a3e75.png");
+            const context = canvas.getContext('2d');
+            // Desenha o frame do vídeo no canvas
+            context.translate(canvas.width, 0);
+            context.scale(-1, 1); // Desespelha a foto
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const imageData = canvas.toDataURL('image/png');
+            const fileName = `IMG_${Date.now()}.png`;
+
+            // 1. Salva no sistema de arquivos do Ghost OS
+            savePhotoToSystem(fileName, imageData);
+            
+            // 2. Cria a thumb na galeria
+            createThumb(imageData);
+            
             closeCamera();
         }
 
@@ -107,6 +148,18 @@
             div.innerHTML = `<img src="${src}">`;
             grid.prepend(div);
         }
+
+        // Carrega fotos já salvas ao abrir
+        function loadGallery() {
+            let userFiles = JSON.parse(localStorage.getItem('ndj_user_files') || '{}');
+            for (let name in userFiles) {
+                if (name.startsWith('IMG_')) {
+                    createThumb(userFiles[name]);
+                }
+            }
+        }
+
+        window.onload = loadGallery;
     </script>
 </body>
 </html>
